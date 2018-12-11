@@ -2,37 +2,41 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
-class Square extends React.Component {
-    // 3. adding 'state' to the components which is used to remember 
-    //... things
-    // 4. In javascript we always have to call super when defining 
-    //... defining the constructor of the subclass. ALL REACT COMPONENT
-    //... CLASSES that have CONSTRUCTOR should start with super(props) 
-    constructor(props){
-      super(props);    
-      this.state = {    
-        value : null,
-      };
-    }
+// class Square extends React.Component {
+//     // 3. // 4.
+    
+//     // 7.
+//     // constructor(props){
+//     //   super(props);    
+//     //   this.state = {    
+//     //     value : null,
+//     //   };
+//     // }
 
-    render() {
-      return (
-        // 0. props is how we transfer the information from parent 
-        //... to child
-        // 1. we will use arrow function syntax for even handlers
-        // 2. if we miss '() =>' then alert will be executed every
-        //... time the code re-renders i.e. here 9 times, we need to 
-        //... pass the onclick prop as a function, so use () =>
-        // 5. this.props.value will give the number that is passed
-        //... in the parent while state will give the value of the state
-        <button className="square" 
-        onClick={() => this.setState({value: 'X'})}
-        >
-          {/* {this.props.value} */ this.state.value}
-        </button>
-      );
-    }
-  }
+//     // 9.
+
+//     render() {
+//       return (
+//         // 0. // 1. // 2. // 5. // 8.
+//         <button className="square" 
+//         onClick={() => this.props.onClick()}
+//         >
+//           {/* {this.state.value} */ this.props.value}
+//         </button>
+//       );
+//     }
+//   }
+
+// REPLACING THE CLASS SQUARE WITH FUNCTIONAL COMPONENTS ref. point 9
+// 10. 
+function Square(props){
+  return(
+    // note the lack of paranthesis on both the sides of onclick
+    <button className="square" onClick={props.onClick}> 
+      {props.value}
+    </button>
+  )
+}
 
     // NOTE : to share data between two chilren, we share the space with 
     // parent instead, and parent share it back to the child using props
@@ -40,7 +44,7 @@ class Square extends React.Component {
     // parent is moderating the communication
   
 class Board extends React.Component {
-  // 6. making an array with 9 nulls corr. to the 9 squares
+  // 6.
   constructor(props){
     super(props);
     this.state = {
@@ -48,11 +52,24 @@ class Board extends React.Component {
     };
   }
 
+  //NOTE: in react it is convention to use handle[event] and on[event]
+  // immutability i.e. using .slice() is very important, because
+  // a. mutation helps us preserve data, i.e. in case of undo redo we can
+  //..protect the data
+  //  b. the main benefit is that it HELPS US BUILD PURE COMPONENTS
+  handleClick(i){
+    const squares = this.state.squares.slice();
+    // .slice() to create copy, to modify copy instead of existing array
+    squares[i] = 'X';
+    this.setState({squares : squares});
+  }
   renderSquare(i) {
   //  return <Square value={i} />; this one was for giving 
   // ... numerical value to the props b/w 0 to 8
 
-      return <Square value={this.state.squares[i]} />;
+      return <Square value={this.state.squares[i]} 
+      onClick={() => this.handleClick(i)}      // handleClick is defined by us   
+      />;
   // ... this sets the value of the state as null initially
   }
   
@@ -104,4 +121,29 @@ class Board extends React.Component {
     <Game />,
     document.getElementById('root')
   );
-  
+
+    // 0. props is how we transfer the information from parent 
+    //... to child
+    // 1. we will use arrow function syntax for even handlers
+    // 2. if we miss '() =>' then alert will be executed every
+    //... time the code re-renders i.e. here 9 times, we need to 
+    //... pass the onclick prop as a function, so use () =>
+    // 3. adding 'state' to the components which is used to remember 
+    //... things
+    // 4. In javascript we always have to call super when defining 
+    //... defining the constructor of the subclass. ALL REACT COMPONENT
+    //... CLASSES that have CONSTRUCTOR should start with super(props) 
+    // 5. this.props.value will give the number that is passed
+    //... in the parent while state will give the value of the state
+    //... replace this.props with this.state
+    // 6. making an array with 9 nulls corr. to the 9 squares
+    // 7. now delete the constructor in square as it no longer keeps the
+    //... the track of game's state
+    // 8. replace this.state with this.props and make props.onClick()
+    //... instead of this.setState
+    // 9. now we will be defining function component of squares
+    //... function components are a simpler way to write components that 
+    //...only contain a render method and don’t have their own state.
+    //...Instead of defining a class which extends React.Component, we can 
+    //...write a function that takes props as input and returns what should 
+    //...be rendered.
