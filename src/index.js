@@ -51,8 +51,9 @@ function CalculateWinner(squares){
   ];
   for (let i = 0; i <lines.length; i++){
     const [a,b,c] = lines[i];
-    if(squares[a] && squares[a]===squares[b] &&  //if positions have same character
-      squares[a]===squares[c]){
+    if(squares[a] && squares[a]===squares[b] &&  
+      squares[a]===squares[c]){ 
+        // eslint-disable-next-lin
         return squares [a];
       }
   }
@@ -66,51 +67,57 @@ function CalculateWinner(squares){
   
 class Board extends React.Component {
   // 6.
-  constructor(props){
-    super(props);
-    this.state = {
-      squares: Array(9).fill(null),
-      xIsNext: true,    
-    };
-  }
+  // constructor(props){
+  //   super(props);
+  //   this.state = {
+  //     squares: Array(9).fill(null),
+  //     xIsNext: true,    
+  //   };
+  // }
 
   //NOTE: in react it is convention to use handle[event] and on[event]
   // immutability i.e. using .slice() is very important, because
   // a. mutation helps us preserve data, i.e. in case of undo redo we can
   //..protect the data
   //  b. the main benefit is that it HELPS US BUILD PURE COMPONENTS
-  handleClick(i){
-    const squares = this.state.squares.slice();
-    // .slice() to create copy, to modify copy instead of existing array
-    squares[i] = this.state.xIsNext ? 'X' : 'O';
-    this.setState({
-      squares : squares,
-      xIsNext : !this.state.xIsNext,
-    });
-  }
+
+  // 16
+  // handleClick(i){
+  //   const squares = this.state.squares.slice();
+  //   // .slice() to create copy, to modify copy instead of existing array
+  //   if(CalculateWinner(squares) || squares[i]){
+  //     return;
+  //   }
+  //   squares[i] = this.state.xIsNext ? 'X' : 'O';
+  //   this.setState({
+  //       squares : squares,
+  //     xIsNext : !this.state.xIsNext,
+  //   });
+  // }
   renderSquare(i) {
   //  return <Square value={i} />; this one was for giving 
   // ... numerical value to the props b/w 0 to 8
 
-      return <Square value={this.state.squares[i]} 
-      onClick={() => this.handleClick(i)}      // handleClick is defined by us   
+      return <Square value={this.props.squares[i]} 
+      onClick={() => this.props.onClick(i)}      // handleClick is defined by us   
       />;
   // ... this sets the value of the state as null initially
   }
   
   render() {
-    const winner = CalculateWinner(this.state.squares);
-    let status;
-    if(winner){
-      status = 'Winner : '+ winner;
-    }else {
-      status = 'Next player: ' +
-      (this.state.xIsNext ? 'X' : 'O');
-    } 
+    
+    // const winner = CalculateWinner(this.state.squares);
+    // let status;
+    // if(winner){
+    //   status = 'Winner : '+ winner;
+    // }else {
+    //   status = 'Next player: ' +
+    //   (this.state.xIsNext ? 'X' : 'O');
+    // } 
 
     return (
       <div>
-        <div className="status">{status}</div>
+        {/* <div className="status">{status}</div> */}
         <div className="board-row">
           {this.renderSquare(0)}
           {this.renderSquare(1)}
@@ -132,14 +139,56 @@ class Board extends React.Component {
 }
   
   class Game extends React.Component {
+    constructor(props){
+      super(props);
+      this.state = {
+        history: [{
+          squares: Array(9).fill(null),
+        }],
+        xIsNext: true,
+      };
+    }
+
+    handleClick(i){
+      const history = this.state.history;
+      const current = history[history.length-1];
+      const squares = current.squares.slice();
+      // .slice() to create copy, to modify copy instead of existing array
+      if(CalculateWinner(squares) || squares[i]){
+        return;
+      }
+      squares[i] = this.state.xIsNext ? 'X' : 'O';
+      this.setState({
+        history : history.concat([{
+          squares : squares,
+        }]),
+        xIsNext : !this.state.xIsNext,
+      });
+    }
+
     render() {
+      const history = this.state.history;
+      const current = history[history.length - 1];
+      const winner = CalculateWinner(current.squares);
+
+      let status;
+      if(winner){
+        status = 'Winner: '+ winner;
+      }else{
+        status = 'Next Player: '+ (this.state.xIsNext ? 'X':'O');
+      }
+
       return (
         <div className="game">
           <div className="game-board">
-            <Board />
+            <Board 
+            squares={current.squares}
+            onClick={(i) => this.handleClick(i)}
+            />
+
           </div>
           <div className="game-info">
-            <div>{/* status */}</div>
+            <div>{status}</div>
             <ol>{/* TODO */}</ol>
           </div>
         </div>
@@ -179,3 +228,20 @@ class Board extends React.Component {
     //...Instead of defining a class which extends React.Component, we can 
     //...write a function that takes props as input and returns what should 
     //...be rendered.
+
+
+    // 10. making us decide a winner by creating a caluclate winner function
+    //...and fixing a state xIsNext to check whos turn it is
+    // 11. include time travel that is history, for this the props will be 
+    //...transfer from game to board and so DELETE constructor in board
+    //...and include it in game, and again
+    // 12. change the this.state to this.props in the boards since now the 
+    //... the game is handling the states and passing it as props
+    // 13. replace this.state.squares[i] with this.props.squares[i] in renderSquare
+    // 14. replace this.handleClick(i) with this.props.onClick(i) 
+    // 15. update the Game component’s render function to use the most recent 
+    //...history entry to determine and display the game’s status
+    // 16. now update the handleclick fucntion include history inside into 
+    //...to it and concatanate it inside the setState function, unlike the push()
+    //...method, concat() method doesnt mutate so we will prefer using it.
+    //... MOVE THE handleclick TO GAME FROM BOARD
